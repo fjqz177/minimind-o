@@ -139,7 +139,7 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MiniMind-O SFT")
-    parser.add_argument("--save_dir", type=str, default="../out", help="模型保存目录")
+    parser.add_argument("--save_dir", type=str, default="out", help="模型保存目录")
     parser.add_argument('--save_weight', default='sft_omni', type=str, help="保存权重的前缀名")
     parser.add_argument("--epochs", type=int, default=15, help="训练轮数")
     parser.add_argument("--batch_size", type=int, default=32, help="batch size")
@@ -155,9 +155,9 @@ if __name__ == "__main__":
     parser.add_argument('--num_hidden_layers', default=8, type=int, help="隐藏层数量")
     parser.add_argument('--max_seq_len', default=512, type=int, help="训练的最大截断长度")
     parser.add_argument('--use_moe', default=0, type=int, choices=[0, 1], help="是否使用MoE架构")
-    parser.add_argument("--data_path", type=str, default="../dataset/train_t2a_mini.parquet", help="训练数据路径（parquet格式）")
-    parser.add_argument("--audio_encoder_dir", type=str, default="../model/SenseVoiceSmall", help="音频encoder路径(SenseVoice)")
-    parser.add_argument("--vision_dir", type=str, default="../model/siglip2-base-p32-256-ve", help="CLIP视觉模型路径")
+    parser.add_argument("--data_path", type=str, default="dataset/train_t2a_mini.parquet", help="训练数据路径（parquet格式）")
+    parser.add_argument("--audio_encoder_dir", type=str, default="model/SenseVoiceSmall", help="音频encoder路径(SenseVoice)")
+    parser.add_argument("--vision_dir", type=str, default="model/siglip2-base-p32-256-ve", help="CLIP视觉模型路径")
     parser.add_argument('--from_weight', default='llm', type=str, help="基于哪个权重训练，为none则不基于任何权重训练")
     parser.add_argument('--from_resume', default=0, type=int, choices=[0, 1], help="是否自动检测&续训（0=否，1=是）")
     parser.add_argument('--freeze_backbone', default='none', type=str, choices=['none', 'all', 'last1'], help="冻结主干模型: none=全量训练, all=只训练audio层, last1=只训练最后1层+audio层")
@@ -180,7 +180,7 @@ if __name__ == "__main__":
         num_hidden_layers=args.num_hidden_layers, 
         use_moe=bool(args.use_moe)
     )
-    ckp_data = omni_checkpoint(omni_config, weight=args.save_weight, save_dir='../checkpoints') if args.from_resume==1 else None
+    ckp_data = omni_checkpoint(omni_config, weight=args.save_weight, save_dir='checkpoints') if args.from_resume==1 else None
     
     # ========== 3. 设置混合精度 ==========
     device_type = "cuda" if "cuda" in args.device else "cpu"

@@ -105,7 +105,7 @@ def init_omni_model(omni_config, from_weight='full_sft', tokenizer_path='../mode
     return model.to(device), tokenizer
 
 
-def omni_checkpoint(omni_config, weight='pretrain_omni', model=None, optimizer=None, epoch=0, step=0, wandb=None, save_dir='../checkpoints', **kwargs):
+def omni_checkpoint(omni_config, weight='pretrain_omni', model=None, optimizer=None, epoch=0, step=0, wandb=None, save_dir='checkpoints', **kwargs):
     os.makedirs(save_dir, exist_ok=True)
     moe_path = '_moe' if omni_config.use_moe else ''
     ckp_path = f'{save_dir}/{weight}_{omni_config.hidden_size}{moe_path}.pth'

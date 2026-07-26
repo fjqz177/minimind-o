@@ -209,12 +209,12 @@ print(torch.cuda.is_available())
 
 ### 2' 开始训练
 
-推荐 mini 训练管线如下，默认在 `trainer/` 目录下执行，可直接 `cd trainer && bash train.sh`：
+推荐 mini 训练管线如下（在项目根目录下执行），可直接 `bash trainer/train.sh`：
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 uv run torchrun --master_port 29560 --nproc_per_node 1 train_sft_omni.py --learning_rate 5e-4 --data_path ../dataset/sft_t2a_mini.parquet --epochs 1 --batch_size 40 --use_compile 1 --from_weight llm --save_weight sft_zero --max_seq_len 512 --use_wandb --use_moe 0
-CUDA_VISIBLE_DEVICES=0 uv run torchrun --master_port 29560 --nproc_per_node 1 train_sft_omni.py --learning_rate 5e-4 --data_path ../dataset/sft_a2a_mini.parquet --epochs 1 --batch_size 40 --use_compile 0 --from_weight sft_zero --save_weight sft_zero --max_seq_len 640 --mode audio_proj --use_wandb --use_moe 0
-CUDA_VISIBLE_DEVICES=0 uv run torchrun --master_port 29560 --nproc_per_node 1 train_sft_omni.py --learning_rate 2e-5 --data_path ../dataset/sft_a2a_mini.parquet --epochs 1 --batch_size 16 --use_compile 0 --from_weight sft_zero --save_weight sft_zero --max_seq_len 768 --use_wandb --use_moe 0
+CUDA_VISIBLE_DEVICES=0 uv run torchrun --master_port 29560 --nproc_per_node 1 trainer/train_sft_omni.py --learning_rate 5e-4 --data_path dataset/sft_t2a_mini.parquet --epochs 1 --batch_size 40 --use_compile 1 --from_weight llm --save_weight sft_zero --max_seq_len 512 --use_wandb --use_moe 0
+CUDA_VISIBLE_DEVICES=0 uv run torchrun --master_port 29560 --nproc_per_node 1 trainer/train_sft_omni.py --learning_rate 5e-4 --data_path dataset/sft_a2a_mini.parquet --epochs 1 --batch_size 40 --use_compile 0 --from_weight sft_zero --save_weight sft_zero --max_seq_len 640 --mode audio_proj --use_wandb --use_moe 0
+CUDA_VISIBLE_DEVICES=0 uv run torchrun --master_port 29560 --nproc_per_node 1 trainer/train_sft_omni.py --learning_rate 2e-5 --data_path dataset/sft_a2a_mini.parquet --epochs 1 --batch_size 16 --use_compile 0 --from_weight sft_zero --save_weight sft_zero --max_seq_len 768 --use_wandb --use_moe 0
 ```
 
 ### 3' 测试已训练模型（可选）
