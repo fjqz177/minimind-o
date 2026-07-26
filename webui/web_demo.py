@@ -7,6 +7,7 @@ from flask_sock import Sock
 from PIL import Image
 from pydub import AudioSegment
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from model.model_omni import MiniMindOmni, RealtimeSession
 from trainer.trainer_utils import log_model_params
@@ -203,8 +204,8 @@ def load_main_model(model_path, model_name):
         if torch.cuda.is_available(): torch.cuda.empty_cache()
         tok = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         m = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True)
-        vision_encoder, vision_processor = MiniMindOmni.load_vision('../model/siglip2-base-p32-256-ve')
-        audio_encoder, audio_processor = MiniMindOmni.load_sensevoice('../model/SenseVoiceSmall')
+        vision_encoder, vision_processor = MiniMindOmni.load_vision(os.path.join(PROJECT_ROOT, 'model', 'siglip2-base-p32-256-ve'))
+        audio_encoder, audio_processor = MiniMindOmni.load_sensevoice(os.path.join(PROJECT_ROOT, 'model', 'SenseVoiceSmall'))
         object.__setattr__(m, 'vision_encoder', vision_encoder)
         object.__setattr__(m, 'vision_processor', vision_processor)
         object.__setattr__(m, 'audio_encoder', audio_encoder)
@@ -443,7 +444,7 @@ def realtime(ws):
 def init_model(args):
     M['cfg'] = args; M['device'] = args.device
     with contextlib.redirect_stdout(io.StringIO()):
-        M['asr'] = AutoModel(model='../model/SenseVoiceSmall', trust_remote_code=True, device=args.device, disable_update=True)
+        M['asr'] = AutoModel(model=os.path.join(PROJECT_ROOT, 'model', 'SenseVoiceSmall'), trust_remote_code=True, device=args.device, disable_update=True)
     M['models'] = scan_hf_models(args.load_from)
     if not M['models']:
         raise RuntimeError(f"未在 {os.path.abspath(args.load_from)} 找到 transformers 模型")
@@ -451,7 +452,7 @@ def init_model(args):
     load_main_model(M['models'][model_name], model_name)
     try:
         from transformers import MimiModel
-        M['mimi'] = MimiModel.from_pretrained('../model/mimi').eval().to(args.device)
+        M['mimi'] = MimiModel.from_pretrained(os.path.join(PROJECT_ROOT, 'model', 'mimi')).eval().to(args.device)
         if args.device != 'cpu': M['mimi'] = M['mimi'].half()
         print('Mimi model loaded')
     except: M['mimi'] = None
@@ -459,7 +460,7 @@ def init_model(args):
         from modelscope.models.audio.sv.DTDNN import CAMPPlus
         M['campplus'] = CAMPPlus(feat_dim=80, embedding_size=192, growth_rate=32, bn_size=4,
                                  init_channels=128, config_str='batchnorm-relu', memory_efficient=True)
-        sd = torch.load('../model/campplus/campplus_cn_common.pt', map_location='cpu')
+        sd = torch.load(os.path.join(PROJECT_ROOT, 'model', 'campplus', 'campplus_cn_common.pt'), map_location='cpu')
         M['campplus'].load_state_dict({k: v.float() for k, v in sd.items()})
         M['campplus'] = M['campplus'].eval().to(args.device)
         M['mel_fn'] = torchaudio.transforms.MelSpectrogram(
@@ -492,7 +493,7 @@ def init_model(args):
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser()
-    p.add_argument('--load_from', default='./', help='模型权重搜索目录；目录下可放多个 HF 格式模型，WebUI 会自动扫描并允许切换。')
+    p.add_argument('--load_from', default=PROJECT_ROOT, help='模型权重搜索目录；目录下可放多个 HF 格式模型，WebUI 会自动扫描并允许切换。')
     p.add_argument('--device', default='cuda' if torch.cuda.is_available() else 'cpu', help='推理设备；CUDA 可用时默认 cuda。显存不足或排查环境问题时可改为 cpu。')
     p.add_argument('--port', default=7860, type=int, help='WebUI 服务端口；端口被占用或需要同时启动多个实例时调整。')
     p.add_argument('--audio_chunk_frames', default=4, type=int, help='流式播放每次解码的 Mimi frame 数；默认 4 约 320ms。WebUI 播放卡顿时可调大到 8/12，低延迟优先时保持 4。')
