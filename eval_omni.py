@@ -15,24 +15,38 @@ warnings.filterwarnings('ignore')
 
 
 def init_model(args):
-    tokenizer = AutoTokenizer.from_pretrained(args.load_from)
-    if 'model' in args.load_from:
-        moe_suffix = '_moe' if args.use_moe else ''
-        ckp = f'./{args.save_dir}/{args.weight}_{args.hidden_size}{moe_suffix}.pth'
-        model = MiniMindOmni(
-            OmniConfig(
-                hidden_size=args.hidden_size, 
-                num_hidden_layers=args.num_hidden_layers, 
-                use_moe=bool(args.use_moe)
-            ),
-            audio_encoder_path="./model/SenseVoiceSmall",
-            vision_model_path="./model/siglip2-base-p32-256-ve"
-        )
-        model.load_state_dict(torch.load(ckp, map_location=args.device), strict=False)
-    else:
-        model = AutoModelForCausalLM.from_pretrained(args.load_from, trust_remote_code=True)
-        model.audio_encoder, model.audio_processor = MiniMindOmni.load_sensevoice("./model/SenseVoiceSmall")
-        model.vision_encoder, model.vision_processor = MiniMindOmni.load_vision("./model/siglip2-base-p32-256-ve")
+    # funasr 1.3.1 compatibility: its build_model() calls model.to(device) which
+    # fails on meta tensors (PyTorch 2.x+transformers fast_init creates params on
+    # meta device first, then loads weights). Redirect meta->device via to_empty().
+    import torch.nn as nn
+    _orig_nn_to = nn.Module.to
+    def _patched_to(mod, *args, **kwargs):
+        target = args[0] if args else kwargs.get('device', 'cpu')
+        if target and any(p.device.type == 'meta' for p in mod.parameters()):
+            return mod.to_empty(device=target)
+        return _orig_nn_to(mod, *args, **kwargs)
+    nn.Module.to = _patched_to
+    try:
+        tokenizer = AutoTokenizer.from_pretrained(args.load_from)
+        if 'model' in args.load_from:
+            moe_suffix = '_moe' if args.use_moe else ''
+            ckp = f'./{args.save_dir}/{args.weight}_{args.hidden_size}{moe_suffix}.pth'
+            model = MiniMindOmni(
+                OmniConfig(
+                    hidden_size=args.hidden_size, 
+                    num_hidden_layers=args.num_hidden_layers, 
+                    use_moe=bool(args.use_moe)
+                ),
+                audio_encoder_path="./model/SenseVoiceSmall",
+                vision_model_path="./model/siglip2-base-p32-256-ve"
+            )
+            model.load_state_dict(torch.load(ckp, map_location=args.device), strict=False)
+        else:
+            model = AutoModelForCausalLM.from_pretrained(args.load_from, trust_remote_code=True)
+            model.audio_encoder, model.audio_processor = MiniMindOmni.load_sensevoice("./model/SenseVoiceSmall")
+            model.vision_encoder, model.vision_processor = MiniMindOmni.load_vision("./model/siglip2-base-p32-256-ve")
+    finally:
+        nn.Module.to = _orig_nn_to
     log_model_params(model)
     if model.audio_encoder is not None: model.audio_encoder.to(args.device)
     if model.vision_encoder is not None: model.vision_encoder.to(args.device)
