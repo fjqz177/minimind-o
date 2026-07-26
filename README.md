@@ -137,7 +137,7 @@ uv run modelscope download --model gongjy/mimi --local_dir ./model/mimi
 # 下载 CAMPPlus 说话人编码器到 ./model/campplus
 uv run modelscope download --model gongjy/campplus --local_dir ./model/campplus
 # 下载 MiniMind 语言模型权重到 ./out 目录下（作为训练 Omni 的基座语言模型）
-uv run modelscope download --model gongjy/minimind-3o-pytorch llm_768.pth --local_dir ./out
+uv run modelscope download --model gongjy/minimind-3o-pytorch --local_dir ./out
 ```
 
 注：也可从 [ModelScope Collection](https://modelscope.cn/collections/gongjy/MiniMind-O) 或 [HuggingFace Collection](https://huggingface.co/collections/jingyaogong/minimind-o) 选择对应内容 `git clone`（需LFS）下载，此处不再赘述。
@@ -153,20 +153,14 @@ minimind-o/
 │   ├── campplus/
 │   └── ...
 ├── out/
-│   └── llm_768.pth
+│   ├── llm_768.pth
+│   └── ...
 └── ...
 ```
 
 ## Ⅰ 🚀 模型推理
 
-### 1' 下载发布权重
-
-```bash
-# 下载发布权重到 ./out 目录下
-uv run modelscope download --model gongjy/minimind-3o-pytorch --local_dir ./out
-```
-
-### 2' 命令行问答
+### 1' 命令行问答
 
 ```bash
 uv run python eval_omni.py --load_from model --weight sft_omni
@@ -182,7 +176,7 @@ git clone https://modelscope.cn/models/gongjy/minimind-3o
 uv run python eval_omni.py --load_from minimind-3o
 ```
 
-### 3' 启动 WebUI（可选）
+### 2' 启动 WebUI（可选）
 
 ```bash
 # ✅ 直接从项目根目录运行，脚本会自动扫描项目目录下的 transformers 格式模型文件夹（如 minimind-3o/）

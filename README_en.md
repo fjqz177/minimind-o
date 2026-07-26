@@ -136,7 +136,7 @@ uv run modelscope download --model gongjy/mimi --local_dir ./model/mimi
 # Download CAM++ speaker encoder to ./model/campplus
 uv run modelscope download --model gongjy/campplus --local_dir ./model/campplus
 # Download MiniMind LLM weights to ./out (used as the language backbone for training Omni)
-uv run modelscope download --model gongjy/minimind-3o-pytorch llm_768.pth --local_dir ./out
+uv run modelscope download --model gongjy/minimind-3o-pytorch --local_dir ./out
 ```
 
 You can also `git clone` the corresponding repos from the [ModelScope Collection](https://modelscope.cn/collections/gongjy/MiniMind-O) or [HuggingFace Collection](https://huggingface.co/collections/jingyaogong/minimind-o) (LFS required); details omitted here.
@@ -152,20 +152,14 @@ minimind-o/
 │   ├── campplus/
 │   └── ...
 ├── out/
-│   └── llm_768.pth
+│   ├── llm_768.pth
+│   └── ...
 └── ...
 ```
 
 ## Ⅰ 🚀 Inference
 
-### 1' Download released weights
-
-```bash
-# Download released weights to ./out
-uv run modelscope download --model gongjy/minimind-3o-pytorch --local_dir ./out
-```
-
-### 2' Command-line chat
+### 1' Command-line chat
 
 ```bash
 uv run python eval_omni.py --load_from model --weight sft_omni
@@ -181,7 +175,7 @@ git clone https://modelscope.cn/models/gongjy/minimind-3o
 uv run python eval_omni.py --load_from minimind-3o
 ```
 
-### 3' Launch WebUI (optional)
+### 2' Launch WebUI (optional)
 
 ```bash
 # ✅ Run directly from the project root — the script automatically scans the project
