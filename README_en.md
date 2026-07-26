@@ -205,7 +205,31 @@ If unavailable, please download the matching `.whl` from [torch_stable](https://
 
 ### 1' Download data
 
-For a quick start, downloading only the `_mini` parquet files from the [dataset link](https://huggingface.co/datasets/jingyaogong/minimind-o_dataset) and placing them under `./dataset` is enough.
+For a quick start, download only the mini dataset (`sft_t2a_mini.parquet` and `sft_a2a_mini.parquet`) into `./dataset/`. To reproduce the released weights, download the full dataset instead.
+
+**ModelScope** ([dataset page](https://modelscope.cn/datasets/gongjy/minimind-o_dataset), faster in China):
+
+```bash
+# Download mini dataset only
+uv run modelscope download --dataset gongjy/minimind-o_dataset \
+    --include "sft_t2a_mini.parquet" "sft_a2a_mini.parquet" \
+    --local_dir ./dataset
+
+# Or download all dataset files (full + visual)
+uv run modelscope download --dataset gongjy/minimind-o_dataset --local_dir ./dataset
+```
+
+**HuggingFace** ([dataset page](https://huggingface.co/datasets/jingyaogong/minimind-o_dataset)):
+
+```bash
+# Download all dataset files via huggingface-cli
+uv run huggingface-cli download jingyaogong/minimind-o_dataset \
+    --local-dir ./dataset --repo-type dataset
+
+# Alternatively, manually download the needed .parquet files from the dataset page
+```
+
+After downloading, `./dataset/` should contain the corresponding `.parquet` files.
 
 ### 2' Train
 

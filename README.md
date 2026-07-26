@@ -205,7 +205,31 @@ print(torch.cuda.is_available())
 
 ### 1' 下载数据
 
-快速开始时，推荐从[数据集链接](https://huggingface.co/datasets/jingyaogong/minimind-o_dataset)只下载 `_mini` 数据集，并放到 `./dataset` 下。
+快速入门时推荐只下载 mini 数据集（`sft_t2a_mini.parquet` 和 `sft_a2a_mini.parquet`），放到 `./dataset/` 下即可跑通完整训练管线。如需复现发布权重，则需下载全部数据集。
+
+**ModelScope**（[数据集页面](https://modelscope.cn/datasets/gongjy/minimind-o_dataset)，国内访问更快）：
+
+```bash
+# 仅下载 mini 数据集
+uv run modelscope download --dataset gongjy/minimind-o_dataset \
+    --include "sft_t2a_mini.parquet" "sft_a2a_mini.parquet" \
+    --local_dir ./dataset
+
+# 或下载全部数据集文件（full + visual）
+uv run modelscope download --dataset gongjy/minimind-o_dataset --local_dir ./dataset
+```
+
+**HuggingFace**（[数据集页面](https://huggingface.co/datasets/jingyaogong/minimind-o_dataset)）：
+
+```bash
+# 通过 huggingface-cli 下载全部数据集
+uv run huggingface-cli download jingyaogong/minimind-o_dataset \
+    --local-dir ./dataset --repo-type dataset
+
+# 也可以从数据集页面手动下载所需 .parquet 文件放入 ./dataset/
+```
+
+完成后 `./dataset/` 下应包含对应的 `.parquet` 文件。
 
 ### 2' 开始训练
 
