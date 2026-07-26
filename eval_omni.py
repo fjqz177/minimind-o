@@ -46,6 +46,9 @@ def eval_sample(model, tokenizer, args, idx, prompt, audio_inputs, output_name, 
     x = torch.tensor(tokenizer(inputs_text).data['input_ids'], dtype=torch.long, device=args.device)[None, ...]
 
     audio_frames = []
+    token_count = 0
+    t_start = time.perf_counter()
+    t_first_token = None
     with torch.no_grad():
         res_y = model.generate(x, tokenizer.eos_token_id, max_new_tokens=args.max_new_tokens,
                                temperature=args.temperature, top_p=args.top_p, stream=True,
@@ -56,6 +59,9 @@ def eval_sample(model, tokenizer, args, idx, prompt, audio_inputs, output_name, 
         history_idx = 0
         for y, audio_frame in res_y:
             if y is not None:
+                if t_first_token is None:
+                    t_first_token = time.perf_counter()
+                token_count += 1
                 answer = tokenizer.decode(y[0].tolist(), skip_special_tokens=True)
                 if answer and answer[-1] != '�':
                     print(answer[history_idx:], end='', flush=True)
@@ -63,6 +69,11 @@ def eval_sample(model, tokenizer, args, idx, prompt, audio_inputs, output_name, 
             if audio_frame:
                 audio_frames.append(audio_frame)
         print()
+        t_end = time.perf_counter()
+        elapsed = t_end - t_start
+        tftt_ms = (t_first_token - t_start) * 1000 if t_first_token is not None else 0
+        tokens_per_sec = token_count / elapsed if elapsed > 0 else 0
+        print(f'⏱️  [Speed]: {token_count} tokens in {elapsed:.2f}s ({tokens_per_sec:.2f} tok/s) | TFTT: {tftt_ms:.0f}ms')
 
         if audio_frames:
             print(f'🎹 [Talker]: {len(audio_frames)} frames', end=" ")
